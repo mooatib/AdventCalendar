@@ -1,0 +1,7 @@
+name: AdventCalendar
+version: 1.0.0
+main: com.dib.AdventCalendarPlugin
+description: A Minecraft plugin for setting up a christmas advent calendar
+author: PaperMC
+website: https://github.com/mooatib/AdventCalendar
+api-version: '1.21.10'
