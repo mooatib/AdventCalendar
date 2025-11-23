@@ -17,7 +17,7 @@ public class AdventCalendarPlugin extends JavaPlugin {
     private AdventCalendarPlugin() {
         this.databaseMethods = new DatabaseMethods(this.getLogger(),this.getDataFolder());
         rewardService = new RewardService(databaseMethods);
-        listener = new EventListener(databaseMethods, rewardService);
+        listener = new EventListener(rewardService);
     }
 
     @Override

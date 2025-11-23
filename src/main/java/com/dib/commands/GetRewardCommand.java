@@ -23,11 +23,6 @@ public class GetRewardCommand extends BukkitCommand {
             return true;
         }
 
-        Player player = (Player) sender;
-        if(rewardService.giveRewardPlayer(player)) {
-            return true;
-        }
-
-        return false;
+        return rewardService.giveRewardPlayer((Player) sender);
     }
 }
