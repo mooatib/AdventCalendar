@@ -36,10 +36,6 @@ public class RewardLoader {
             try {
                 //To avoid crashes if a wrong material is inserted
                 Material material = Material.valueOf(config.getString("rewards." + key + ".material"));
-                if (material == null) {
-                    plugin.getLogger().warning("Invalid material : " + material.name());
-                    continue;
-                }
                 Reward reward = new Reward(
                         Integer.parseInt(key),
                         material,

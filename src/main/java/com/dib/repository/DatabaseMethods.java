@@ -1,7 +1,6 @@
 package com.dib.repository;
 
 import com.dib.models.Reward;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -102,7 +101,7 @@ public class DatabaseMethods {
         }
     }
 
-    public boolean resetPlayerRewards(Player player) {
+    public void resetPlayerRewards(Player player) {
         try (Connection conn = adventDatabase.getConnection();
              PreparedStatement stmt = conn.prepareStatement(Queries.RESET_PLAYER_REWARDS)) {
 
@@ -120,7 +119,6 @@ public class DatabaseMethods {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "SQL Error during reward reset.", e);
         }
-        return true;
     }
 
     public void close() {

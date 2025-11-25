@@ -16,12 +16,11 @@ public class RewardService {
         this.databaseMethods = databaseMethods;
     }
 
-    public boolean giveRewardPlayer(Player player) {
+    public void giveRewardPlayer(Player player) {
         List<Reward> rewardList = databaseMethods.getMissingRewards(player.getUniqueId());
 
         if (rewardList.isEmpty()) {
             player.sendMessage(ChatColor.GREEN + "You are up to date in your advent calendar !");
-            return false;
         }
 
         //Using java Iterator to avoid concurrent errors (removing while in the for-each loop here)
@@ -54,8 +53,6 @@ public class RewardService {
                 player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + formatName(itemName) + " left to receive.");
             }
         }
-        //Returns true if the reward is given entirely
-        return rewardList.isEmpty();
     }
 
     private String formatName(String name) {
