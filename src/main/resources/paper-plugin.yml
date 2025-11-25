@@ -5,3 +5,8 @@ description: A Minecraft plugin for setting up a christmas advent calendar
 author: PaperMC
 website: https://github.com/mooatib/AdventCalendar
 api-version: '1.21.10'
+
+permissions:
+  adventcalendar.admin:
+    description: Admin perms for reset command
+    default: op

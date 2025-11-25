@@ -1,16 +1,17 @@
 package com.dib.repository;
 
 import com.dib.models.Reward;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,19 +20,18 @@ public class DatabaseMethods {
     private final Logger logger;
     private final AdventDatabase adventDatabase;
 
-    public DatabaseMethods(Logger logger, File resourcesFolder) {
+    public DatabaseMethods(Logger logger, AdventDatabase adventDatabase) {
         this.logger = logger;
-        this.adventDatabase = new AdventDatabase(logger, resourcesFolder, "advent-calendar.db");
+        this.adventDatabase = adventDatabase;
         this.adventDatabase.initializeDatabase();
-        this.adventDatabase.fillDayRewards();
     }
 
     private int getDay() {
         return LocalDate.now().getDayOfMonth();
     }
 
-    public Set<Reward> getMissingRewards(UUID playerUUID) {
-        Set<Reward> missingRewards = new HashSet<>();
+    public List<Reward> getMissingRewards(UUID playerUUID) {
+        List<Reward> missingRewards = new ArrayList<>();
 
         try {
             Connection conn = adventDatabase.getConnection();
@@ -82,6 +82,45 @@ public class DatabaseMethods {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error : insertDayClaimed", e);
         }
+    }
+
+    public void insertReward(Reward reward) {
+        try {
+            Connection conn = adventDatabase.getConnection();
+            PreparedStatement ps = conn.prepareStatement(Queries.FILL_REWARDS_TABLE);
+
+            ps.setInt(1, reward.day());
+            ps.setString(2, reward.item().toString());
+            ps.setInt(3, reward.amount());
+            ps.setString(4, reward.item().toString());
+            ps.setInt(5, reward.amount());
+            ps.executeUpdate();
+
+            ps.close();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error : insertReward", e);
+        }
+    }
+
+    public boolean resetPlayerRewards(Player player) {
+        try (Connection conn = adventDatabase.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(Queries.RESET_PLAYER_REWARDS)) {
+
+            String playerUUID = player.getUniqueId().toString();
+            stmt.setString(1, playerUUID);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                logger.log(Level.INFO, "Advent calendar reset for" + playerUUID);
+            } else {
+                logger.log(Level.INFO, "No entries to remove for " + playerUUID);
+            }
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "SQL Error during reward reset.", e);
+        }
+        return true;
     }
 
     public void close() {

@@ -1,0 +1,14 @@
+# Format: 'Day': { material: "NAME", amount: Amount, }
+rewards:
+  '1':
+    material: IRON_INGOT
+    amount: 5
+  '2':
+    material: GOLDEN_APPLE
+    amount: 2
+  '3':
+    material: DIAMOND_SWORD
+    amount: 1
+  '24':
+    material: NETHER_STAR
+    amount: 1

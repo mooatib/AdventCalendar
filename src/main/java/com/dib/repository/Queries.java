@@ -31,17 +31,26 @@ public class Queries {
             ON DR.day = DC.day AND DC.player_uuid = ?
         WHERE
             (DC.day IS NULL OR DC.remaining_amount > 0)
-            AND DR.day <= ?;
+            AND DR.day <= ?
+        ORDER BY DR.day;
         """;
 
     public static final String ADD_DAY_CLAIMED = """
-            INSERT OR REPLACE INTO days_claimed
-            VALUES (?,?,?);
-            """;
+        INSERT OR REPLACE INTO days_claimed
+        VALUES (?,?,?);
+    """;
 
     public static final String FILL_REWARDS_TABLE = """
-            INSERT OR IGNORE INTO day_reward
-            VALUES (?,?,?);
-            """;
+        INSERT INTO day_reward (day, item, amount)
+        VALUES (?, ?, ?)
+        ON CONFLICT(day) DO UPDATE SET
+            item = ?,
+            amount = ?;
+    """;
+
+    public static final String RESET_PLAYER_REWARDS = """
+        DELETE FROM days_claimed
+        WHERE player_uuid = ?;
+    """;
 
 }

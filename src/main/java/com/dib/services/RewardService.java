@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
 
 public class RewardService {
     private final DatabaseMethods databaseMethods;
@@ -16,20 +16,16 @@ public class RewardService {
         this.databaseMethods = databaseMethods;
     }
 
-    // TODO : meilleur affichage (liste de ce qui a été reçu et pas reçu, et non 21 messages)
-    //        donner dans l'ordre (jour 1 puis 2...)
-    //        meilleur affichage des noms (pas DIAMOND_SWORD mais Diamond Sword)
-    //        message : ===ADVENT CALENDAR===
     public boolean giveRewardPlayer(Player player) {
-        Set<Reward> rewardSet = databaseMethods.getMissingRewards(player.getUniqueId());
+        List<Reward> rewardList = databaseMethods.getMissingRewards(player.getUniqueId());
 
-        if (rewardSet.isEmpty()) {
-            //player.sendMessage(ChatColor.GREEN + "You are up to date in your advent calendar !");
+        if (rewardList.isEmpty()) {
+            player.sendMessage(ChatColor.GREEN + "You are up to date in your advent calendar !");
             return false;
         }
 
         //Using java Iterator to avoid concurrent errors (removing while in the for-each loop here)
-        java.util.Iterator<Reward> iterator = rewardSet.iterator();
+        java.util.Iterator<Reward> iterator = rewardList.iterator();
         while (iterator.hasNext()) {
             Reward reward = iterator.next();
 
@@ -42,7 +38,7 @@ public class RewardService {
             if (remainingItems.isEmpty()) {
                 databaseMethods.insertDayClaimed(player.getUniqueId(), reward.day(), 0);
                 iterator.remove();
-                player.sendMessage(ChatColor.GREEN + "Day " + reward.day() + ": You received " + reward.amount() + "x " + itemName + "!");
+                player.sendMessage(ChatColor.GOLD + "Day " + reward.day() + ": You received " + reward.amount() + "x " + formatName(itemName) + "!");
             }
             // Reward not given entirely :
             else {
@@ -55,10 +51,28 @@ public class RewardService {
                         remainingAmount
                 );
 
-                player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + itemName + " left to receive.");
+                player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + formatName(itemName) + " left to receive.");
             }
         }
         //Returns true if the reward is given entirely
-        return rewardSet.isEmpty();
+        return rewardList.isEmpty();
+    }
+
+    private String formatName(String name) {
+        if (name == null || name.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder formatted = new StringBuilder();
+
+        String[] words = name.split("_");
+
+        for (String word : words) {
+            if (word.isEmpty()) continue;
+            String capitalized = word.substring(0, 1).toUpperCase()
+                    + word.substring(1).toLowerCase();
+            formatted.append(capitalized).append(" ");
+        }
+        return formatted.toString().trim();
     }
 }

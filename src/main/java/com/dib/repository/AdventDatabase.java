@@ -1,8 +1,10 @@
 package com.dib.repository;
-import com.dib.models.Reward;
 
 import java.io.File;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,23 +44,6 @@ public class AdventDatabase {
     private static void createTables(Statement stmt) throws SQLException {
         stmt.execute(Queries.CREATE_TABLE_DAYS_CLAIMED);
         stmt.execute(Queries.CREATE_TABLE_DAY_REWARD);
-    }
-
-    public void fillDayRewards() {
-        try {
-            Connection conn = getConnection();
-            PreparedStatement ps = conn.prepareStatement(Queries.FILL_REWARDS_TABLE);
-            for (Reward reward : RewardMap.items) {
-                ps.setInt(1,reward.day());
-                ps.setString(2,reward.item().toString());
-                ps.setInt(3,reward.amount());
-
-                ps.executeUpdate();
-            }
-            ps.close();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error : fillDayRewards", e);
-        }
     }
 
     public void initializeDatabase() {
