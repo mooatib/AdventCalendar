@@ -2,9 +2,11 @@ package com.dib.services;
 
 import com.dib.models.Reward;
 import com.dib.repository.DatabaseMethods;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,42 +19,44 @@ public class RewardService {
     }
 
     public void giveRewardPlayer(Player player) {
-        List<Reward> rewardList = databaseMethods.getMissingRewards(player.getUniqueId());
+        List<Reward> rewards = databaseMethods.getMissingRewards(player.getUniqueId());
 
-        if (rewardList.isEmpty()) {
+        if (rewards.isEmpty()) {
             player.sendMessage(ChatColor.GREEN + "You are up to date in your advent calendar !");
+            return;
         }
 
-        //Using java Iterator to avoid concurrent errors (removing while in the for-each loop here)
-        java.util.Iterator<Reward> iterator = rewardList.iterator();
-        while (iterator.hasNext()) {
-            Reward reward = iterator.next();
-
-            ItemStack item = new ItemStack(reward.item(), reward.amount());
+        for (Reward reward : rewards) {
+            ItemStack item = createRewardItem(reward);
             HashMap<Integer, ItemStack> remainingItems = player.getInventory().addItem(item);
-
-            // In order to print the given items in the chat
-            String itemName = reward.item().name();
+            String itemName = reward.customName().orElse(formatName(reward.item().name()));
 
             if (remainingItems.isEmpty()) {
                 databaseMethods.insertDayClaimed(player.getUniqueId(), reward.day(), 0);
-                iterator.remove();
-                player.sendMessage(ChatColor.GOLD + "Day " + reward.day() + ": You received " + reward.amount() + "x " + formatName(itemName) + "!");
-            }
-            // Reward not given entirely :
-            else {
-                ItemStack itemRemaining = remainingItems.values().iterator().next();
-                int remainingAmount = itemRemaining.getAmount();
-
-                databaseMethods.insertDayClaimed(
-                        player.getUniqueId(),
-                        reward.day(),
-                        remainingAmount
-                );
-
-                player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + formatName(itemName) + " left to receive.");
+                player.sendMessage(ChatColor.GOLD + "Day " + reward.day() + ": You received " + reward.amount() + "x " + itemName + "!");
+            } else {
+                int remainingAmount = remainingItems.values().iterator().next().getAmount();
+                databaseMethods.insertDayClaimed(player.getUniqueId(), reward.day(), remainingAmount);
+                player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + itemName + " left to receive.");
             }
         }
+    }
+
+    private ItemStack createRewardItem(Reward reward) {
+        ItemStack item = new ItemStack(reward.item(), reward.amount());
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return item;
+        }
+
+        reward.customName().ifPresent(name -> meta.customName(Component.text(name)));
+        reward.enchantment().ifPresent(enchant ->
+                meta.addEnchant(enchant.type(), enchant.level(), true)
+        );
+
+        item.setItemMeta(meta);
+        return item;
     }
 
     private String formatName(String name) {

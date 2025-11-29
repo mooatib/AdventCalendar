@@ -9,6 +9,14 @@ rewards:
   '3':
     material: DIAMOND_SWORD
     amount: 1
+  '4':
+    material: STICK
+    amount: 1
+    metadata:
+      custom_name: "Magic Stick"
+      enchantment:
+        name: KNOCKBACK
+        level: 10
   '24':
     material: NETHER_STAR
     amount: 1
