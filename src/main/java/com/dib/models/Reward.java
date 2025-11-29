@@ -2,4 +2,11 @@ package com.dib.models;
 
 import org.bukkit.Material;
 
-public record Reward(int day, Material item, int amount){ }
+import java.util.Optional;
+
+public record Reward(int day,
+                     Material item,
+                     int amount,
+                     Optional<String> customName,
+                     Optional<RewardEnchantment> enchantment) {
+}
