@@ -55,30 +55,4 @@ public class Queries {
                 DELETE FROM days_claimed
                 WHERE player_uuid = ?;
             """;
-
-    public static final String CREATE_TABLE_SANTA_NPC = """
-            CREATE TABLE IF NOT EXISTS santa_npc (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
-                world TEXT NOT NULL,
-                x REAL NOT NULL,
-                y REAL NOT NULL,
-                z REAL NOT NULL,
-                yaw REAL NOT NULL,
-                pitch REAL NOT NULL
-            )
-            """;
-
-    public static final String SAVE_SANTA_LOCATION = """
-            INSERT OR REPLACE INTO santa_npc (id, world, x, y, z, yaw, pitch)
-            VALUES (1, ?, ?, ?, ?, ?, ?)
-            """;
-
-    public static final String GET_SANTA_LOCATION = """
-            SELECT world, x, y, z, yaw, pitch FROM santa_npc WHERE id = 1
-            """;
-
-    public static final String DELETE_SANTA_LOCATION = """
-            DELETE FROM santa_npc WHERE id = 1
-            """;
-
 }

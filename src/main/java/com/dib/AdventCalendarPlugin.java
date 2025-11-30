@@ -5,7 +5,6 @@ import com.dib.commands.ACCommand;
 import com.dib.models.Reward;
 import com.dib.repository.AdventDatabase;
 import com.dib.repository.RewardRepository;
-import com.dib.repository.SantaRepository;
 import com.dib.services.EventListener;
 import com.dib.services.RewardService;
 import com.dib.services.SantaNPCManager;
@@ -20,7 +19,6 @@ import java.util.List;
 public class AdventCalendarPlugin extends JavaPlugin {
     private final AdventDatabase adventDatabase;
     private final RewardRepository rewardRepository;
-    private final SantaRepository santaRepository;
     private final EventListener eventListener;
     private final RewardService rewardService;
     private final SantaNPCManager santaNPCManager;
@@ -28,9 +26,8 @@ public class AdventCalendarPlugin extends JavaPlugin {
     public AdventCalendarPlugin() {
         this.adventDatabase = new AdventDatabase(this.getLogger(), new File(this.getDataFolder().toURI()), "advent-calendar.db");
         this.rewardRepository = new RewardRepository(this.getLogger(), adventDatabase);
-        this.santaRepository = new SantaRepository(this.getLogger(), adventDatabase);
         this.rewardService = new RewardService(this.rewardRepository);
-        this.santaNPCManager = new SantaNPCManager(this, this.santaRepository);
+        this.santaNPCManager = new SantaNPCManager(this.getLogger());
         this.eventListener = new EventListener(rewardService, santaNPCManager);
         adventDatabase.initializeDatabase();
         initRewards();
@@ -54,8 +51,6 @@ public class AdventCalendarPlugin extends JavaPlugin {
                         santaNPCManager
                 )
         );
-
-        santaNPCManager.loadSantaFromDatabase();
     }
 
     @Override

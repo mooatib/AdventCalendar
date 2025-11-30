@@ -43,7 +43,6 @@ public class AdventDatabase {
     private static void createTables(Statement stmt) throws SQLException {
         stmt.execute(Queries.CREATE_TABLE_DAYS_CLAIMED);
         stmt.execute(Queries.CREATE_TABLE_DAY_REWARD);
-        stmt.execute(Queries.CREATE_TABLE_SANTA_NPC);
     }
 
     public void initializeDatabase() {

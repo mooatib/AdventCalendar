@@ -94,7 +94,6 @@ public class ACCommand extends BukkitCommand {
 
         target.getUniqueId();
 
-        // Gemini
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             rewardRepository.resetPlayerRewards((Player) target);
             sender.sendMessage(ChatColor.GREEN + "Reset " + target.getName() + "'s advent calendar rewards !");
