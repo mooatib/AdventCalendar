@@ -1,7 +1,7 @@
 package com.dib.services;
 
 import com.dib.models.Reward;
-import com.dib.repository.DatabaseMethods;
+import com.dib.repository.RewardRepository;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class RewardService {
-    private final DatabaseMethods databaseMethods;
+    private final RewardRepository rewardRepository;
 
-    public RewardService(DatabaseMethods databaseMethods) {
-        this.databaseMethods = databaseMethods;
+    public RewardService(RewardRepository rewardRepository) {
+        this.rewardRepository = rewardRepository;
     }
 
     public void giveRewardPlayer(Player player) {
-        List<Reward> rewards = databaseMethods.getMissingRewards(player.getUniqueId());
+        List<Reward> rewards = rewardRepository.getMissingRewards(player.getUniqueId());
 
         if (rewards.isEmpty()) {
             player.sendMessage(ChatColor.GREEN + "You are up to date in your advent calendar !");
@@ -32,11 +32,11 @@ public class RewardService {
             String itemName = reward.customName().orElse(formatName(reward.item().name()));
 
             if (remainingItems.isEmpty()) {
-                databaseMethods.insertDayClaimed(player.getUniqueId(), reward.day(), 0);
+                rewardRepository.insertDayClaimed(player.getUniqueId(), reward.day(), 0);
                 player.sendMessage(ChatColor.GOLD + "Day " + reward.day() + ": You received " + reward.amount() + "x " + itemName + "!");
             } else {
                 int remainingAmount = remainingItems.values().iterator().next().getAmount();
-                databaseMethods.insertDayClaimed(player.getUniqueId(), reward.day(), remainingAmount);
+                rewardRepository.insertDayClaimed(player.getUniqueId(), reward.day(), remainingAmount);
                 player.sendMessage(ChatColor.RED + "Your inventory is full! You still have " + remainingAmount + "x " + itemName + " left to receive.");
             }
         }

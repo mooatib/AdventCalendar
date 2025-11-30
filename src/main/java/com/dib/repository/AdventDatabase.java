@@ -25,7 +25,6 @@ public class AdventDatabase {
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(databaseUrl);
-            logger.info("Database connection established");
         }
         return connection;
     }
@@ -44,6 +43,7 @@ public class AdventDatabase {
     private static void createTables(Statement stmt) throws SQLException {
         stmt.execute(Queries.CREATE_TABLE_DAYS_CLAIMED);
         stmt.execute(Queries.CREATE_TABLE_DAY_REWARD);
+        stmt.execute(Queries.CREATE_TABLE_SANTA_NPC);
     }
 
     public void initializeDatabase() {
@@ -54,7 +54,6 @@ public class AdventDatabase {
             logger.log(Level.SEVERE, "Failed to initialize database", e);
         }
     }
-
 
 
 }

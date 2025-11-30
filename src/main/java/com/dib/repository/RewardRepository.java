@@ -18,14 +18,13 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DatabaseMethods {
+public class RewardRepository {
     private final Logger logger;
     private final AdventDatabase adventDatabase;
 
-    public DatabaseMethods(Logger logger, AdventDatabase adventDatabase) {
+    public RewardRepository(Logger logger, AdventDatabase adventDatabase) {
         this.logger = logger;
         this.adventDatabase = adventDatabase;
-        this.adventDatabase.initializeDatabase();
     }
 
     public void load(List<Reward> rewards) {

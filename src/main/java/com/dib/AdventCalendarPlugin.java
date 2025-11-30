@@ -4,9 +4,11 @@ import com.dib.codecs.RewardCodec;
 import com.dib.commands.ACCommand;
 import com.dib.models.Reward;
 import com.dib.repository.AdventDatabase;
-import com.dib.repository.DatabaseMethods;
+import com.dib.repository.RewardRepository;
+import com.dib.repository.SantaRepository;
 import com.dib.services.EventListener;
 import com.dib.services.RewardService;
+import com.dib.services.SantaNPCManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -16,15 +18,20 @@ import java.io.File;
 import java.util.List;
 
 public class AdventCalendarPlugin extends JavaPlugin {
-    private final DatabaseMethods databaseMethods;
+    private final AdventDatabase adventDatabase;
+    private final RewardRepository rewardRepository;
+    private final SantaRepository santaRepository;
     private final EventListener eventListener;
     private final RewardService rewardService;
+    private final SantaNPCManager santaNPCManager;
 
     public AdventCalendarPlugin() {
-        AdventDatabase adventDatabase = new AdventDatabase(this.getLogger(), new File(this.getDataFolder().toURI()), "advent-calendar.db");
-        this.databaseMethods = new DatabaseMethods(this.getLogger(), adventDatabase);
-        this.rewardService = new RewardService(this.databaseMethods);
-        this.eventListener = new EventListener(rewardService);
+        this.adventDatabase = new AdventDatabase(this.getLogger(), new File(this.getDataFolder().toURI()), "advent-calendar.db");
+        this.rewardRepository = new RewardRepository(this.getLogger(), adventDatabase);
+        this.santaRepository = new SantaRepository(this.getLogger(), adventDatabase);
+        this.rewardService = new RewardService(this.rewardRepository);
+        this.santaNPCManager = new SantaNPCManager(this, this.santaRepository);
+        this.eventListener = new EventListener(rewardService, santaNPCManager);
         adventDatabase.initializeDatabase();
         initRewards();
     }
@@ -42,17 +49,18 @@ public class AdventCalendarPlugin extends JavaPlugin {
                         "/adventcalendar",
                         List.of("ac"),
                         rewardService,
-                        this.databaseMethods,
-                        this
+                        this.rewardRepository,
+                        this,
+                        santaNPCManager
                 )
         );
+
+        santaNPCManager.loadSantaFromDatabase();
     }
 
     @Override
     public void onDisable() {
-        if (databaseMethods != null) {
-            databaseMethods.close();
-        }
+        adventDatabase.closeConnection();
         getLogger().info("Plugin stopped");
     }
 
@@ -63,6 +71,6 @@ public class AdventCalendarPlugin extends JavaPlugin {
             this.saveResource("rewards.yml", false);
         }
         List<Reward> rewards = RewardCodec.decodeAll(config);
-        databaseMethods.load(rewards);
+        rewardRepository.load(rewards);
     }
 }
