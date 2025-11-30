@@ -1,7 +1,8 @@
 package com.dib.commands;
 
-import com.dib.repository.DatabaseMethods;
+import com.dib.repository.RewardRepository;
 import com.dib.services.RewardService;
+import com.dib.services.SantaNPCManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -16,27 +17,30 @@ import java.util.List;
 public class ACCommand extends BukkitCommand {
 
     private final RewardService rewardService;
-    private final DatabaseMethods databaseMethods;
+    private final RewardRepository rewardRepository;
     private final JavaPlugin plugin;
+    private final SantaNPCManager santaNPCManager;
 
     public ACCommand(@NotNull String name,
                      @NotNull String description,
                      @NotNull String usageMessage,
                      @NotNull List<String> aliases,
                      RewardService rewardService,
-                     DatabaseMethods databaseMethods,
-                     JavaPlugin plugin)
+                     RewardRepository rewardRepository,
+                     JavaPlugin plugin,
+                     SantaNPCManager santaNPCManager)
     {
         super(name, description, usageMessage, aliases);
         this.rewardService = rewardService;
-        this.databaseMethods = databaseMethods;
+        this.rewardRepository = rewardRepository;
         this.plugin = plugin;
+        this.santaNPCManager = santaNPCManager;
     }
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String @NotNull [] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.YELLOW + "Usage : /" + getLabel() + " <claim|reset>");
+            sender.sendMessage(ChatColor.YELLOW + "Usage : /" + getLabel() + " <claim|reset|spawnsanta|removesanta>");
             return false;
         }
 
@@ -47,10 +51,21 @@ public class ACCommand extends BukkitCommand {
         else if (args[0].equalsIgnoreCase("claim")) {
             return handleClaim(sender);
         }
+
+        else if (args[0].equalsIgnoreCase("spawnsanta")) {
+            return handleSpawnSanta(sender);
+        }
+
+        else if (args[0].equalsIgnoreCase("removesanta")) {
+            return handleRemoveSanta(sender);
+        }
+
         else {
             sender.sendMessage(ChatColor.YELLOW + "--- AC Command ---");
             sender.sendMessage(ChatColor.YELLOW + "/adventcalendar claim" + ChatColor.GRAY + " : Claim available rewards");
             sender.sendMessage(ChatColor.YELLOW + "/adventcalendar reset <username>" + ChatColor.GRAY + " : Reset chosen player's rewards");
+            sender.sendMessage(ChatColor.YELLOW + "/adventcalendar spawnsanta" + ChatColor.GRAY + " : Spawn Santa NPC at your location");
+            sender.sendMessage(ChatColor.YELLOW + "/adventcalendar removesanta" + ChatColor.GRAY + " : Remove Santa NPC");
             return true;
         }
     }
@@ -79,11 +94,49 @@ public class ACCommand extends BukkitCommand {
 
         target.getUniqueId();
 
-        // Gemini
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            databaseMethods.resetPlayerRewards((Player) target);
+            rewardRepository.resetPlayerRewards((Player) target);
             sender.sendMessage(ChatColor.GREEN + "Reset " + target.getName() + "'s advent calendar rewards !");
         });
+        return true;
+    }
+
+    private boolean handleSpawnSanta(CommandSender sender) {
+        if (!sender.hasPermission("adventcalendar.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have the permissions to execute this command.");
+            return true;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "Only players can execute this command.");
+            return false;
+        }
+
+        boolean success = santaNPCManager.spawnSanta(player.getLocation());
+
+        if (success) {
+            sender.sendMessage(ChatColor.GREEN + "Santa NPC spawned successfully!");
+        } else {
+            sender.sendMessage(ChatColor.RED + "Santa NPC already exists! Use /ac removesanta first.");
+        }
+
+        return true;
+    }
+
+    private boolean handleRemoveSanta(CommandSender sender) {
+        if (!sender.hasPermission("adventcalendar.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have the permissions to execute this command.");
+            return true;
+        }
+
+        boolean success = santaNPCManager.removeSanta();
+
+        if (success) {
+            sender.sendMessage(ChatColor.GREEN + "Santa NPC removed successfully!");
+        } else {
+            sender.sendMessage(ChatColor.RED + "No Santa NPC found!");
+        }
+
         return true;
     }
 }

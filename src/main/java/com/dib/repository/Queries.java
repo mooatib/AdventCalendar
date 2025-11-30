@@ -55,5 +55,4 @@ public class Queries {
                 DELETE FROM days_claimed
                 WHERE player_uuid = ?;
             """;
-
 }
